@@ -1,56 +1,102 @@
-import React, { Component } from 'react';
-import '../style/stats.scss';
-import PropTypes from 'prop-types';
+<template>
+  <div class="pokemon-stats-info">
+    <span class="sumAtribute">
+      Sum of all attributes : {{sumOfAllAttributes}}
+    </span>
+    <div v-for="stat in stats" :key="stat.key" class="first">
+      <div class="inside">
+        <div class="inside-white" :style="{height: `${stat.correctValue}%`}"></div>
+      </div>
+      <span>{{stat.key}}</span>
+    </div>
+  </div>
+</template>
 
-export default class Stats extends Component {
-  constructor (props) {
-    super(props);
+<script>
+import stats from './stats_info.vue';
 
-    this.state = { stats: this.getAtributes() };
+export default {
+
+  props: {
+    statsInfo: Array,
+  },
+
+  computed: {
+    arrayIconName () {
+      console.log(this.pokemonIndex);
+      return [ 'Collection', 'Wishlist', 'Trade', 'Add' ];
+    },
+
+    stats () {
+      return this.statsInfo.map(({ base_stat: value, stat }) => {
+        const max = 200;
+        const correctValue = 100 - value * 100 / max;
+
+        return {key: stat.name, correctValue, value};
+      }).reverse();
+    },
+
+    sumOfAllAttributes () {
+      const sumOfValue = this.stats.reduce((acum, {value}) => acum + value, 0);
+
+      return this.statsInfo.length ? (sumOfValue / this.statsInfo.length).toFixed(0) : 0;
+    },
+
+  },
+};
+</script>
+
+<style lang="scss">
+.pokemon-stats-info {
+  background-color: #a4a4a4;
+  border-radius: 10px;
+  margin: 1em 0;
+  width: 90%;
+  margin-left: 20px;
+  text-align: center;
+
+  .first {
+    display: inline-block;
+    width: 60px;
+    height: 150px;
+    margin: 10px 0 0 5px;
   }
-
-  componentDidUpdate (prevProps) {
-    if (prevProps.statsInfo !== this.props.statsInfo) {
-      this.setState({
-        stats: this.getAtributes(),
-      });
+  .inside {
+    background: #30a7d7;
+    display: inline-block;
+    width: 60px;
+    height: 120px;
+  }
+  .inside-white {
+    background: #fff;
+    width: 60px;
+  }
+  span {
+    font-family: "Roboto",arial,sans-serif;
+    font-weight: bold;
+    color: #212121;
+    float: left;
+    font-size: 62.5%;
+    width: 100%;
+    &:first-letter {
+      text-transform: uppercase;
     }
   }
-
-  getAtributes () {
-    let atribValue = this.props.statsInfo.map(({ base_stat, stat }) => {
-      return {key: stat.name, value: base_stat};
-    });
-
-    return atribValue.reverse();
-  }
-
-  render () {
-    const infoAtribute = this.state.stats.reduce((acum, {key, value}) => {
-      const max = 200;
-      const correctValue = 100 - value * 100 / max;
-      acum.sumOfValue += value;
-
-      acum.markup.push( <div key={key} className="first">
-        <div className="inside">
-          <div className="inside-white" style={{height: `${correctValue}%`}}></div>
-        </div>
-        <span>{key}</span>
-      </div>);
-
-      return acum;
-    }, { sumOfValue: 0, markup: [] });
-
-    return (
-      <div key={this.props.stats} className="pokemon-stats-info">
-        <span className="sumAtribute">Sum of all attributes : {this.props.statsInfo.length ? (infoAtribute.sumOfValue / this.props.statsInfo.length).toFixed(0) : 0}</span>
-        {infoAtribute.markup}
-      </div>
-    );
+  .sumAtribute {
+    font-weight: bold;
+    color: #212121;
+    float: left;
+    font-size: 100%;
+    width: 100%;
+    padding-left: 20px;
+    margin-top: 5px;
+    text-align: left;
   }
 }
 
-Stats.propTypes = {
-  statsInfo: PropTypes.array,
-  stats: PropTypes.number,
-};
+.inside {
+  background: #fff;
+  width: 60px;
+}
+
+</style>

@@ -1,99 +1,80 @@
-import Type from './type.js';
-import React, { Component } from 'react';
-import '../style/evolution.scss';
-import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
-import { getPokemonsAction } from '../redux/actions/create-actions';
-import PropTypes from 'prop-types';
-
-class Evolution extends Component {
-  constructor (props) {
-    super(props);
-    this.state = {
-      level: {},
-    };
-  }
-
-  getType (types) {
-    const typesList = types.map((type, index) => {
-      return <Type key={index} name={type.type.name} />;
-    });
-
-    return typesList;
-  }
-  render () {
-    if (!this.props.evolutions || Object.keys(this.props.evolutions).length === 0) return <div>Loading ...</div>;
-
-    let onlySecondLevel = this.props.evolutions.filter(({level}) => {
-      return level === '2';
-    });
-    let onlyThirdLevel = this.props.evolutions.filter(({level}) => {
-      return level === '3';
-    });
-
-    let claz = '';
-
-    if (this.props.evolutions.length === 1) {
-      claz = 'onePokemon homeless';
-    }
-    else if (onlySecondLevel.length === 1 && onlyThirdLevel.length === 0) {
-      claz = 'onlyTwoPokemon';
-    }
-    else if (onlySecondLevel.length > 2 && onlyThirdLevel.length === 0) {
-      claz = 'eevee blok';
-    }
-    else if (onlySecondLevel.length === 2) {
-      claz = 'onlyTwoLevel2';
-    }
-    else {
-      claz = 'threeEvol';
-    }
-
-    const evolutions = this.props.evolutions.map((evolution) => {
-      const pokemon = this.props.allPokemons.find(({name}) => name === evolution.name);
-
-      return (
-        <div className={claz} key={pokemon.id}>
-          {this.props.evolutions.length === 1 ? <p>This Pokémon does not evolve.</p> : ''}
-          <div className={'level' + evolution.level}>
-            <Link to={`/pokemon/${pokemon.name}/`}>
-              <div>
-                <img src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/${pokemon.index}.png`} className="imgFooter" alt="pokemon"></img>
-                <h3>{pokemon.name}<span> #{pokemon.index}</span></h3>
-                {this.getType(pokemon.types)}
-              </div>
-            </Link>
-            <ul>
-              <li></li>
-            </ul>
-          </div>
-        </div>
-      );
-    });
-
-    return (
-      <div className="pokemon-evolution">
-        <h2>Evolutions</h2>
-        <div className="evolution-profile">
-          {evolutions}
+<template>
+  <div class="pokemon-evolution">
+    <h2>Evolutions</h2>
+    <div class="evolution-profile">
+      <div :class="claz">
+        <p v-if="evolutions.length === 1">This Pokémon does not evolve.</p>
+        <div v-for="evolution in evolutions" :class="[`level${evolution.level}`]">
+          <router-link :to="`/pokemon/${evolution.name}`">
+            <div>
+              <img :src="getPictureUrl(evolution)" class="imgFooter" alt="pokemon"></img>
+              <h3>{{evolution.name}}<span> #{{evolution.index}}</span></h3>
+              <type
+                v-for="type in evolution.types"
+               :key="type.type.name"
+               :typeName="type.type.name"
+               />
+            </div>
+          </router-link>
+          <ul>
+            <li></li>
+          </ul>
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  </div>
+</template>
 
-export default connect(
-  (state) => {
-    const { pokemonsList } = state;
+<script>
+import type from './type.vue';
 
-    return {
-      allPokemons: pokemonsList.allPokemons,
-    };
+export default {
+  components: {
+    type,
   },
-  {getPokemonsAction }
-)(Evolution);
 
-Evolution.propTypes = {
-  allPokemons: PropTypes.array,
-  evolutions: PropTypes.array,
-};
+  props: {
+    evolutions: Array,
+  },
+
+  methods: {
+    getPictureUrl (pokemon) {
+      return `https://assets.pokemon.com/assets/cms2/img/pokedex/detail/${pokemon.index}.png`;
+    },
+  },
+
+  computed: {
+    claz () {
+      if (this.evolutions.length === 1) {
+        return 'onePokemon homeless';
+      }
+      else if (this.onlySecondLevel.length === 1 && this.onlyThirdLevel.length === 0) {
+        return 'onlyTwoPokemon';
+      }
+      else if (this.onlySecondLevel.length > 2 && this.onlyThirdLevel.length === 0) {
+        return 'eevee blok';
+      }
+      else if (this.onlySecondLevel.length === 2) {
+        return 'onlyTwoLevel2';
+      }
+      else {
+        return 'threeEvol';
+      }
+    },
+
+    onlySecondLevel () {
+      return this.evolutions.filter(({level}) => {
+        return level === '2';
+      });
+    },
+    onlyThirdLevel () {
+      return this.evolutions.filter(({level}) => {
+        return level === '3';
+      });
+    },
+  },
+}
+</script>
+
+<style lang="css">
+</style>

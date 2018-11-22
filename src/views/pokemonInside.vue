@@ -1,19 +1,28 @@
 <template>
-  <div className="wraper">
-    <div className="container pokedex">
+  <div class="wraper">
+    <div class="container-pokedex">
+      <div :class="[loaderClass]"></div>
 
-      <!-- <PreviousAndNextPokemon
-        pokemon={this.state.pokemon}
-        pokemonPrevios={this.state.pokemonPrevios}
-        pokemonNext={this.state.pokemonNext}
-      /> -->
+      <PreviousAndNextPokemon
+        v-if="pokemon"
+        :pokemon="pokemon"
+        :pokemonPrevios="pokemonPrevios"
+        :pokemonNext="pokemonNext"
+      />
 
-      <div className="section pokedex-pokemon-details">
-        <!-- <LeftContent index={this.state.pokemon.index} statsInfo={this.state.pokemon.stats}/>
-        <RightContent pokemon={this.state.pokemon} /> -->
+      <div class="section pokedex-pokemon-details">
+        <LeftContent
+          v-if="pokemon"
+          :pokemonIndex="pokemon.index"
+          :statsInfo="pokemon.stats"
+        />
+        <RightContent v-if="pokemon" :pokemon="pokemon" />
       </div>
 
-      <!-- <Evolution evolutions={ this.state.pokemon.evolution } /> -->
+      <Evolution
+        v-if="evolutionsFullData.length"
+        :evolutions="evolutionsFullData"
+      />
 
     </div>
   </div>
@@ -22,135 +31,188 @@
 <script>
 
 import { mapActions } from 'vuex';
-import {getPokemon, getListAllPokemon, getPokemonSpeciesByName, getEvolution, getPokemonInfoEvol } from '../api/fetch.js';
-import type from '../components/type.vue';
-// import PreviousAndNextPokemon from '../components/previousAndNextPokemon.vue';
-// import RightContent from '../components/rightContent.vue';
-// import Evolution from '../components/evolution.vue';
-// import LeftContent from '../components/leftContent.vue';
+import {
+  getPokemon,
+  getListAllPokemon,
+  getEvolution,
+  getPokemonInfoEvol,
+ } from '../api/fetch.js';
+import PreviousAndNextPokemon from '../components/previousAndNextPokemon.vue';
+import RightContent from '../components/rightContent.vue';
+import Evolution from '../components/evolution.vue';
+import LeftContent from '../components/leftContent.vue';
 
 export default {
   name: 'pokemons',
   components: {
-    // PreviousAndNextPokemon,
-    // RightContent,
-    // Evolution,
-    // LeftContent,
-    type,
+    PreviousAndNextPokemon,
+    RightContent,
+    Evolution,
+    LeftContent,
   },
   data () {
     return {
-      pokemon: {},
-      pokemonPrevios: {},
-      pokemonNext: {},
+      // pokemonState: {},
+      // pokemonPrevios: {},
+      // pokemonNext: {},
     };
   },
 
   methods: {
     ...mapActions([
-      'getAllPokemons',
-      'getPokemonsAction',
+      'getAllPokemonsAction',
+      'getPokemonAction',
+      'getAdditionalAction',
+      'getEvolutionAction',
     ]),
 
     initComponent () {
       if (this.allPokemons.length === 0) {
-        getListAllPokemon()
-          .then( data => {
-            this.getAllPokemons(data);
-            this.fetchAllData();
-            if (this.currentIndex !== 0) {
-              this.fetchAllData();
-            }
-          });
+        return this.getAllPokemonsAction()
+          .then(() => this.fetchAllData());
       }
+
+      return this.fetchAllData();
     },
 
     fetchAllData () {
-      const pokemon = this.getPokemonFromList();
-
-      if (pokemon) {
-        if (!pokemon.descriptionList) {
-          this.getDiscriptionPokemon().then((data) => {
-            if (!pokemon.evolution) {
-              this.evolution(data);
-              this.updatePokemon(pokemon);
+      if (this.pokemon) {
+        if (!this.pokemon.descriptionList) {
+          return this.getAdditionalAction(this.$route.params.name).then((data) => {
+            if (!this.pokemon.evolution) {
+              this.getEvolutionAction(data, this.$route.params.name);
             }
           });
         }
-
-        this.updatePokemon(pokemon);
       }
       else {
-        getPokemon(this.props.match.params.name)
-          .then(data => {
-            this.getPokemonsAction(data);
-            this.getDiscriptionPokemon().then((data) => {
-              this.evolution(data);
-
-              const pokemon = this.getPokemonFromList();
-              this.updatePokemon(pokemon);
-            });
-
-            return data.id;
-          });
+        return this.getPokemonAction(this.$route.params.name)
+          .then(() => this.getAdditionalAction(this.$route.params.name)
+            .then((data) => this.getEvolutionAction(data, this.$route.params.name)));
       }
     },
-
-    evolution (elem) {
-      return getEvolution(elem.url)
-        .then(data => {
-          this.evolutionPokemonList(data);
-        });
-    },
-
   },
 
   computed: {
-    getPokemonFromList () {
-      return this.allPokemons.find(({ id, stats, name }) => stats && (name === this.props.match.params.name || id === +this.props.match.params.name));
-    }
-
-    getDiscriptionPokemon () {
-      return getPokemonSpeciesByName(this.props.match.params.name)
-        .then(data => {
-          return this.getAdditionalAction(data).payload.data;
-        });
-    }
-
-    evolutionPokemonList (data) {
-      return getPokemonInfoEvol(data, this.props.match.params.name)
-        .then(pokemonsList => {
-          pokemonsList.forEach(pokemon => {
-            if (pokemon.id >= 0) {
-              this.getPokemonAction(pokemon);
-            }
-          });
-          this.getEvolutionAction(data);
-          this.setState({
-            evolution: data,
-            evolutionList: pokemonsList.map(pokemon => {
-              if (pokemon.id >= 0) {
-                return pokemon;
-              }
-
-              return this.allPokemons.find(({ id, name }) => id >= 0 && name === this.props.match.params.name);
-            }),
-          });
-
-          return;
-        });
-    }
-
     allPokemons () {
       return this.$store.state.pokemonsList.allPokemons;
+    },
+    pokemon () {
+      return this.allPokemons.find(({ id, stats, name }) => stats
+        && (name === this.$route.params.name || id === +this.$route.params.name));
+    },
+
+    pokemonEvolutions () {
+      return (this.pokemon && this.pokemon.evolution) || []
+    },
+
+    evolutionsFullData () {
+      return this.pokemonEvolutions.map((evolution) => Object.assign(
+        {},
+        (this.allPokemons.find(({name}) => name === evolution.name) || {}),
+        { level: evolution.level }
+      ));
+    },
+
+    pokemonPrevios () {
+      const prevId = this.pokemon.id < 2 ? this.pokemonsLength - 1 : this.pokemon.id - 2;
+      return this.allPokemons[prevId];
+    },
+    pokemonNext () {
+      const nextId = this.pokemon.id >= this.pokemonsLength ? 0 : this.pokemon.id;
+      return this.allPokemons[nextId];
+    },
+    pokemonsLength () {
+      return this.allPokemons.length;
     },
     currentIndex () {
       return this.$store.state.pokemonsList.currentIndex;
     },
+    loaderClass () {
+      return `${this.showLoader ? 'loader' : ''}`;
+    },
+    showLoader () {
+      return this.$store.state.pokemonsList.showLoader;
+    },
+  },
+
+  watch: {
+    '$route': 'initComponent',
   },
 
   created () {
     this.initComponent();
-  },
+  }
 };
 </script>
+
+<style lang="scss">
+.loader {
+  border: 16px solid #bebebe;
+  border-top: 16px solid #3498db;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin .2s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+  ul {
+    list-style: none;
+    margin: 0;
+  }
+
+  li::after {
+    font-family: 'icon-fonts';
+    color: #fff;
+    font-size: 300%;
+    position: absolute;
+  }
+
+  .icon {
+    font-family: 'icon-fonts';
+  }
+
+  .icon_male_symbol:before {
+    content: "\f122";
+  }
+  .icon_female_symbol:before {
+    content: "\f115";
+  }
+  .icon_pokeball:before {
+    content: "\f12a";
+  }
+  .icon_arrow_sm_left:before {
+      content: "\f104";
+  }
+  .icon_arrow_sm_right:before {
+      content: "\f105";
+  }
+  .wraper {
+    box-sizing: border-box;
+    clear: both;
+    display: block;
+    margin: 0 auto;
+    max-width: 1280px;
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+  }
+  .container-pokedex {
+    background: #fff;
+    margin: 0 auto;
+    width: 980px;
+  }
+
+  .pokedex-pokemon-details {
+    margin-top: 85px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 755px;
+    grid-gap: 20px;
+  }
+</style>

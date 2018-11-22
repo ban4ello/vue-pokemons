@@ -1,48 +1,140 @@
-import React, { Component } from 'react';
-import '../style/previousAndNextPokemon.scss';
-import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
+<template>
+  <div class="header">
+    <div class="pokedex-pokemon-pagination">
 
-export default class PreviousAndNextPokemon extends Component {
-  constructor (props) {
-    super(props);
-  }
-
-  render () {
-    return (
-      <div className="header">
-        <div className="pokedex-pokemon-pagination">
-
-          <Link to={`/pokemon/${this.props.pokemonPrevios.name}/`} className="previous">
-            <div className="pokedex-pokemon-pagination-wrapper">
-              <span className="icon icon_arrow_sm_left"></span>
-              <span className="pokemon-number">#{this.props.pokemonPrevios.index} </span>
-              <span className="pokemon-name" id="pokemon-name">{this.props.pokemonPrevios.name}</span>
-            </div>
-          </Link>
-          <Link to={`/pokemon/${this.props.pokemonNext.name}/`} className="next">
-            <div className="pokedex-pokemon-pagination-wrapper">
-              <span className="icon icon_arrow_sm_right"></span>
-              <span className="pokemon-number">#{this.props.pokemonNext.index} </span>
-              <span className="pokemon-name" id="pokemon-name">{this.props.pokemonNext.name}</span>
-            </div>
-          </Link>
+      <router-link  :to="`/pokemon/${pokemonPrevios.name}/`" class="previous">
+        <div class="pokedex-pokemon-pagination-wrapper">
+          <span class="icon icon_arrow_sm_left"></span>
+          <span class="pokemon-number">#{{pokemonPrevios.index}} </span>
+          <span class="pokemon-name" id="pokemon-name">{{pokemonPrevios.name}}</span>
         </div>
-
-        <div className="pokedex-pokemon-pagination-title">
-          <div className="title-text">
-            <span>{this.props.pokemon.name}</span>
-            <span>#{this.props.pokemon.index}</span>
-          </div>
+      </router-link >
+      <router-link  :to="`/pokemon/${pokemonNext.name}/`" class="next">
+        <div class="pokedex-pokemon-pagination-wrapper">
+          <span class="icon icon_arrow_sm_right"></span>
+          <span class="pokemon-number">#{{pokemonNext.index}} </span>
+          <span class="pokemon-name" id="pokemon-name">{{pokemonNext.name}}</span>
         </div>
+      </router-link >
+    </div>
 
+    <div class="pokedex-pokemon-pagination-title">
+      <div class="title-text">
+        <span>{{pokemon.name}}</span>
+        <span>#{{pokemon.index}}</span>
       </div>
-    );
+    </div>
+
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    pokemon: Object,
+    pokemonPrevios: Object,
+    pokemonNext: Object,
+  },
+
+};
+</script>
+
+<style lang="scss">
+.header {
+  position: relative;
+  padding: 0;
+  max-width: 1280px;
+  width: 100%;
+  height: 110px;
+  display: block;
+  margin: 0 auto;
+}
+
+.previous, .next {
+  height: 110px;
+  text-align: center;
+}
+
+.pokedex-pokemon-pagination {
+  a {
+   box-sizing: border-box;
+   background-color: #a4a4a4;
+   cursor: pointer;
+   display: block;
+   float: left;
+   width: 50%;
+   color: #fff;
+   float: left;
+   font-size: 150%;
+   line-height: 162.5%;
+
+   &.previous {
+    text-decoration: none;
+    border-right: 4px solid #fff;
+
+    div {
+      float: left;
+      padding: 1em 0 4em;
+      max-width: 448px;
+    }
+   }
+   &.next>div {
+     float: left;
+     padding: 1em 0 4em;
+     max-width: 448px;
+   }
+   &:hover {
+     background-color: #30a7d7;
+   }
+   span.icon {
+     background-color: #fff;
+     border-radius: 20px;
+     color: #616161;
+     float: left;
+     font-size: 65%;
+     font-weight: bold;
+     height: 26px;
+     line-height: 180%;
+     margin: 0.5em 4.5em 0;
+     text-align: center;
+     width: 26px;
+   }
+ }
+ span.pokemon-name {
+   color: #616161;
+   margin: 0 0.5em;
+ }
+
+}
+
+.pokedex-pokemon-pagination-title {
+  position: absolute;
+  bottom: -20px;
+  margin-right: -100%;
+  width: 58.0325%;
+  margin-left: 20.2%;
+  background-color: #fff;
+
+  .title-text {
+    margin-left: 100px;
+  }
+  span {
+    float: left;
+    font-size: 225%;
+    margin-left: 20px;
+    margin-top: 0.5em;
+    text-align: center;
+    text-transform: capitalize;
   }
 }
 
-PreviousAndNextPokemon.propTypes = {
-  pokemon: PropTypes.object,
-  pokemonPrevios: PropTypes.object,
-  pokemonNext: PropTypes.object,
-};
+#pokemon-name {
+  text-transform: capitalize;
+}
+.icon_arrow_sm_right:before {
+    content: "\f105";
+}
+.icon_arrow_sm_left:before {
+    content: "\f104";
+}
+</style>

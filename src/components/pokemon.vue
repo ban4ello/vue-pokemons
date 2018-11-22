@@ -23,8 +23,6 @@
 </template>
 
 <script>
-
-import { getListAllPokemon, getPokemons } from '../api/fetch.js';
 import type from './type.vue';
 
 export default {

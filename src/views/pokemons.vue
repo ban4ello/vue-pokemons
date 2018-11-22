@@ -23,7 +23,6 @@
 <script>
 
 import { mapActions } from 'vuex';
-import { getListAllPokemon, getPokemons } from '../api/fetch.js';
 import pokemon from '@/components/pokemon.vue';
 
 export default {
@@ -40,18 +39,22 @@ export default {
 
   methods: {
     ...mapActions([
-      'getAllPokemons',
+      'getAllPokemonsAction',
       'getPokemonsAction',
     ]),
 
     initComponent () {
       if (this.allPokemons.length === 0) {
-        this.getAllPokemons()
+        return this.getAllPokemonsAction()
           .then(() => {
             if (this.currentIndex === 0) {
               this.loadNextPokemon();
             }
           });
+      }
+
+      if (this.currentIndex === 0) {
+        this.loadNextPokemon();
       }
     },
 
@@ -122,18 +125,18 @@ export default {
 }
 
 .loader {
-    border: 16px solid #bebebe;
-    border-top: 16px solid #3498db;
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin .2s linear infinite;
-    margin: 0 auto;
+  border: 16px solid #bebebe;
+  border-top: 16px solid #3498db;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin .2s linear infinite;
+  margin: 0 auto;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 #loadMore {
