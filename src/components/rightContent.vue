@@ -44,8 +44,8 @@
             <span class="atribute-value">{{option.category}}</span>
           </li>
           <li v-if="ability">
-            <span className="atribute-title">Abilities</span>
-            <span className="atribute-value">{{ability.ability.name}}</span>
+            <span class="atribute-title">Abilities</span>
+            <span class="atribute-value">{{ability.ability.name}}</span>
           </li>
           <!-- <li v-else></li> -->
         </ul>
@@ -187,6 +187,7 @@ export default {
 }
 
 .atribute-value {
+  text-transform: capitalize;
   clear: both;
   color: #212121;
   float: left;

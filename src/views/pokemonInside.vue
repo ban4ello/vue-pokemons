@@ -166,13 +166,6 @@ export default {
     margin: 0;
   }
 
-  li::after {
-    font-family: 'icon-fonts';
-    color: #fff;
-    font-size: 300%;
-    position: absolute;
-  }
-
   .icon {
     font-family: 'icon-fonts';
   }

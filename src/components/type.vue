@@ -143,7 +143,7 @@ export default {
 <style lang="scss">
 .type {
   display: inline-block;
-  float: left;
+  // float: left;
   margin-left: 10px;
   border-radius: 3px;
   width: 75px;
